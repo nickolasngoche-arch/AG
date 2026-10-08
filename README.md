@@ -44,20 +44,6 @@ Rows whose `source` is not "Sample data" are shown as real data.
 
 All endpoints are under `/api/`. Authenticated calls send `Authorization: Token <token>`.
 
-| Method | Path | Who | Purpose |
-|---|---|---|---|
-| POST | `/auth/signup/` | public | Create account (`role`: farmer or buyer) and get a token |
-| POST | `/auth/login/` | public | Log in with email and password |
-| POST | `/auth/logout/` | user | Invalidate the token |
-| GET | `/auth/me/` | user | Current user |
-| GET, POST | `/products/` | user / farmers | List produce (`?search=&county=&category=&mine=1`) / post produce |
-| PATCH, DELETE | `/products/<id>/` | owner | Mark sold, edit, delete |
-| GET, POST | `/requests/` | user / buyers | List buying requests / post a request |
-| PATCH, DELETE | `/requests/<id>/` | owner | Mark fulfilled, edit, delete |
-| GET | `/market-prices/` | public | Prices (`?county=&commodity=`) |
-
-Phone numbers are stored as `2547XXXXXXXX`, the format the M-Pesa Daraja API expects, which keeps a future
-payments feature simple.
 
 ## Tests and checks
 
