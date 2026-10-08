@@ -1,0 +1,8 @@
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+.stat { background: linear-gradient(135deg, var(--green-700), var(--green-600)); color: #fff; border-radius: var(--radius); padding: 1rem 1.25rem; display: flex; flex-direction: column; }
+.stat strong { font-size: 2rem; line-height: 1.1; }
+.stat span { opacity: 0.9; font-size: 0.9rem; }
+.tabs { display: flex; gap: 0.25rem; border-bottom: 2px solid var(--border); margin-bottom: 1.25rem; overflow-x: auto; }
+.tab { background: none; border: 0; padding: 0.7rem 1.1rem; font: inherit; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; }
+.tab:hover { color: var(--green-800); }
+.tab.active { color: var(--green-800); border-bottom-color: var(--green-600); }
