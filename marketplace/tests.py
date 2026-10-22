@@ -116,3 +116,88 @@ class MarketplaceApiTests(APITestCase):
         # A stale/invalid token must not break the public endpoint.
         self.client.credentials(HTTP_AUTHORIZATION="Token invalid")
         self.assertEqual(self.client.get("/api/market-prices/").status_code, 200)
+
+
+# Transporter role, route postings and matching
+class TransporterMatchingTests(APITestCase):
+    """Transporter role, route-availability postings and personalised matching."""
+
+    def signup(self, role, email):
+        res = self.client.post("/api/auth/signup/", signup_payload(role, email), format="json")
+        self.assertEqual(res.status_code, 201, res.data)
+        return res.data["token"]
+
+    def auth(self, token):
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
+
+    def transport_payload(self, **extra):
+        from datetime import date, timedelta
+        return {
+            "origin_county": "kisii", "origin_location": "Kisii Town",
+            "destination_county": "uasin_gishu", "destination_location": "Eldoret",
+            "vehicle_type": "lorry_7t", "capacity_kg": "7000", "price_per_trip": "18000",
+            "available_date": str(date.today() + timedelta(days=7)),
+            "phone": "0722334455", **extra,
+        }
+
+    def test_transporter_signup_and_role_guard(self):
+        token = self.signup("transporter", "t@example.com")
+        self.auth(token)
+        self.assertEqual(self.client.get("/api/auth/me/").data["role"], "transporter")
+        self.auth(self.signup("farmer", "f@example.com"))
+        res = self.client.post("/api/transports/", self.transport_payload(), format="json")
+        self.assertEqual(res.status_code, 403)  # only transporters post availability
+
+    def test_transporter_crud(self):
+        token = self.signup("transporter", "t@example.com")
+        self.auth(token)
+        res = self.client.post("/api/transports/", self.transport_payload(), format="json")
+        self.assertEqual(res.status_code, 201, res.data)
+        self.assertEqual(res.data["transporter"]["name"], "Test Transporter")
+        self.assertTrue(res.data["is_owner"])
+        tid = res.data["id"]
+        # County filter matches either end of the route
+        self.assertEqual(len(self.client.get("/api/transports/?county=uasin_gishu").data), 1)
+        # Owner marks the truck as booked; it leaves the public list but stays in "mine"
+        self.assertEqual(self.client.patch(f"/api/transports/{tid}/", {"is_active": False}, format="json").status_code, 200)
+        self.assertEqual(self.client.get("/api/transports/").data, [])
+        self.assertEqual(len(self.client.get("/api/transports/?mine=1").data), 1)
+
+    def test_personalised_matches(self):
+        farmer = self.signup("farmer", "f@example.com")
+        buyer = self.signup("buyer", "b@example.com")
+        transporter = self.signup("transporter", "t@example.com")
+
+        self.auth(farmer)
+        self.client.post("/api/products/", {
+            "name": "Maize", "category": "cereals", "price_per_kg": "60", "quantity_kg": "100",
+            "phone": "0722000111", "county": "kisii", "location": "Nyamache",
+        }, format="json")
+
+        self.auth(buyer)
+        self.client.post("/api/requests/", {
+            "product_name": "Maize", "category": "cereals", "quantity_kg": "500",
+            "max_price_per_kg": "70", "phone": "0733000222",
+            "county": "uasin_gishu", "location": "Eldoret",
+        }, format="json")
+
+        self.auth(transporter)
+        self.client.post("/api/transports/", self.transport_payload(), format="json")
+
+        self.auth(farmer)
+        kinds = {m["kind"] for m in self.client.get("/api/matches/").data["matches"]}
+        self.assertIn("request", kinds)   # buyer in Eldoret wants maize
+        self.assertIn("transport", kinds)  # truck leaving Kisii with enough capacity
+
+        self.auth(buyer)
+        kinds = {m["kind"] for m in self.client.get("/api/matches/").data["matches"]}
+        self.assertIn("product", kinds)
+        self.assertIn("transport", kinds)   # truck delivers to Eldoret
+
+        self.auth(transporter)
+        kinds = {m["kind"] for m in self.client.get("/api/matches/").data["matches"]}
+        self.assertIn("product", kinds)   # cargo waiting at the Kisii origin
+        self.assertIn("request", kinds)   # buyer waiting at the Eldoret destination
+
+    def test_matches_require_authentication(self):
+        self.assertEqual(self.client.get("/api/matches/").status_code, 401)

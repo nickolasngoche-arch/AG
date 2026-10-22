@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import BuyerRequest, MarketPrice, Product
+from .models import BuyerRequest, MarketPrice, Product, TransportListing
 
 
 @admin.register(Product)
@@ -15,6 +15,14 @@ class BuyerRequestAdmin(admin.ModelAdmin):
     list_display = ("product_name", "buyer", "quantity_kg", "max_price_per_kg", "county", "is_open", "created_at")
     list_filter = ("category", "county", "is_open")
     search_fields = ("product_name", "buyer__email", "location")
+
+
+@admin.register(TransportListing)
+class TransportListingAdmin(admin.ModelAdmin):
+    list_display = ("origin_location", "destination_location", "transporter", "vehicle_type",
+                    "capacity_kg", "available_date", "is_active", "created_at")
+    list_filter = ("origin_county", "destination_county", "vehicle_type", "is_active")
+    search_fields = ("origin_location", "destination_location", "transporter__email")
 
 
 @admin.register(MarketPrice)

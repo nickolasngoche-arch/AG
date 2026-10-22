@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from accounts.constants import COUNTY_CHOICES
+from accounts.constants import COUNTY_CHOICES, ROUTE_COUNTY_CHOICES
 
 CATEGORY_CHOICES = [
     ("cereals", "Cereals"),
@@ -13,6 +13,16 @@ CATEGORY_CHOICES = [
     ("fruits", "Fruits"),
     ("tubers", "Roots & tubers"),
     ("other", "Other"),
+]
+
+VEHICLE_CHOICES = [
+    ("pickup", "Pickup / small truck"),
+    ("lorry_3t", "Lorry (up to 3 tonnes)"),
+    ("lorry_7t", "Lorry (up to 7 tonnes)"),
+    ("lorry_10t", "Lorry (10+ tonnes)"),
+    ("trailer", "Trailer / large truck"),
+    ("boda", "Motorcycle (boda boda)"),
+    ("other", "Other vehicle"),
 ]
 
 POSITIVE = [MinValueValidator(Decimal("0.01"))]
@@ -29,6 +39,7 @@ class Product(models.Model):
     price_per_kg = models.DecimalField(max_digits=10, decimal_places=2, validators=POSITIVE)
     quantity_kg = models.DecimalField(max_digits=10, decimal_places=2, validators=POSITIVE)
     description = models.TextField(blank=True)
+    image = models.ImageField(upload_to="products/", blank=True, null=True)
     phone = models.CharField(max_length=15)
     county = models.CharField(max_length=20, choices=COUNTY_CHOICES)
     location = models.CharField(max_length=120)
@@ -67,6 +78,40 @@ class BuyerRequest(models.Model):
 
     def __str__(self):
         return f"Wanted: {self.product_name} ({self.quantity_kg} kg)"
+
+
+class TransportListing(models.Model):
+    """A transporter advertising route availability and cargo space
+    (business plan section 3.3: origin, destination, route, dates, vehicle
+    type, payload/space and price)."""
+
+    transporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="transports"
+    )
+    origin_county = models.CharField(max_length=20, choices=COUNTY_CHOICES)
+    origin_location = models.CharField(max_length=120)
+    destination_county = models.CharField(max_length=20, choices=ROUTE_COUNTY_CHOICES)
+    destination_location = models.CharField(max_length=120)
+    vehicle_type = models.CharField(max_length=20, choices=VEHICLE_CHOICES, default="other")
+    capacity_kg = models.DecimalField(max_digits=10, decimal_places=2, validators=POSITIVE)
+    price_per_trip = models.DecimalField(
+        max_digits=10, decimal_places=2, validators=POSITIVE, null=True, blank=True
+    )
+    available_date = models.DateField()
+    accepts_return_loads = models.BooleanField(
+        default=True,
+        help_text="Willing to carry cargo on a return/empty leg at a negotiated rate.",
+    )
+    description = models.TextField(blank=True)
+    phone = models.CharField(max_length=15)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.origin_location} → {self.destination_location} ({self.get_vehicle_type_display()})"
 
 
 class MarketPrice(models.Model):

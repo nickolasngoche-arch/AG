@@ -85,6 +85,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+# Uploaded product photos (served in development; use S3/equivalent in production).
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
@@ -93,6 +98,9 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {"auth": "30/min"},
     "COERCE_DECIMAL_TO_STRING": False,
 }
+
+
+
 
 # The Vite dev server proxies /api to Django, so CORS is only needed when the
 # frontend is served from a different origin (e.g. after deployment).

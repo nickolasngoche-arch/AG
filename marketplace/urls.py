@@ -1,3 +1,4 @@
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from . import views
@@ -5,6 +6,7 @@ from . import views
 router = DefaultRouter()
 router.register("products", views.ProductViewSet, basename="product")
 router.register("requests", views.BuyerRequestViewSet, basename="request")
+router.register("transports", views.TransportListingViewSet, basename="transport")
 router.register("market-prices", views.MarketPriceViewSet, basename="market-price")
 
-urlpatterns = router.urls
+urlpatterns = [path("matches/", views.MatchesView.as_view())] + router.urls

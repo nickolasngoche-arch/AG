@@ -3,7 +3,7 @@ from rest_framework import serializers
 
 from accounts.validators import normalize_phone
 
-from .models import BuyerRequest, MarketPrice, Product
+from .models import BuyerRequest, MarketPrice, Product, TransportListing
 
 
 def _person(user):
@@ -28,13 +28,16 @@ class ProductSerializer(_PhoneMixin, serializers.ModelSerializer):
     is_owner = serializers.SerializerMethodField()
     category_display = serializers.CharField(source="get_category_display", read_only=True)
     county_display = serializers.CharField(source="get_county_display", read_only=True)
+    # Accepts a file in multipart/form-data; exposed back as an absolute URL.
+    image = serializers.ImageField(required=False, allow_null=True, write_only=True)
+    image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
             "id", "name", "category", "category_display", "price_per_kg", "quantity_kg",
-            "description", "phone", "county", "county_display", "location",
-            "is_available", "created_at", "farmer", "is_owner",
+            "description", "image", "image_url", "phone", "county", "county_display",
+            "location", "is_available", "created_at", "farmer", "is_owner",
         ]
         read_only_fields = ["id", "created_at"]
 
@@ -44,6 +47,13 @@ class ProductSerializer(_PhoneMixin, serializers.ModelSerializer):
     def get_is_owner(self, obj):
         request = self.context.get("request")
         return bool(request and obj.farmer_id == request.user.id)
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        return request.build_absolute_uri(url) if request else url
 
 
 class BuyerRequestSerializer(_PhoneMixin, serializers.ModelSerializer):
@@ -67,6 +77,36 @@ class BuyerRequestSerializer(_PhoneMixin, serializers.ModelSerializer):
     def get_is_owner(self, obj):
         request = self.context.get("request")
         return bool(request and obj.buyer_id == request.user.id)
+
+
+class TransportListingSerializer(_PhoneMixin, serializers.ModelSerializer):
+    transporter = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
+    vehicle_type_display = serializers.CharField(source="get_vehicle_type_display", read_only=True)
+    origin_county_display = serializers.CharField(source="get_origin_county_display", read_only=True)
+    destination_county_display = serializers.CharField(source="get_destination_county_display", read_only=True)
+    route = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TransportListing
+        fields = [
+            "id", "origin_county", "origin_county_display", "origin_location",
+            "destination_county", "destination_county_display", "destination_location",
+            "route", "vehicle_type", "vehicle_type_display", "capacity_kg",
+            "price_per_trip", "available_date", "accepts_return_loads",
+            "description", "phone", "is_active", "created_at", "transporter", "is_owner",
+        ]
+        read_only_fields = ["id", "created_at"]
+
+    def get_transporter(self, obj):
+        return _person(obj.transporter)
+
+    def get_is_owner(self, obj):
+        request = self.context.get("request")
+        return bool(request and obj.transporter_id == request.user.id)
+
+    def get_route(self, obj):
+        return f"{obj.origin_location} → {obj.destination_location}"
 
 
 class MarketPriceSerializer(serializers.ModelSerializer):
