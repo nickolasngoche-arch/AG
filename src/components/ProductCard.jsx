@@ -6,6 +6,7 @@ export default function ProductCard({ product, onDelete, onSold }) {
   const p = product
   return (
     <article className={p.is_available ? 'listing' : 'listing is-closed'}>
+      {p.image_url && <img className="listing-photo" src={p.image_url} alt={p.name} loading="lazy" />}
       <header className="listing-head">
         <div>
           <h3>{p.name}</h3>

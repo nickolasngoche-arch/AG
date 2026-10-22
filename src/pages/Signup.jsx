@@ -4,12 +4,7 @@ import { fieldErrors } from '../api/client.js'
 import { useAuth } from '../hooks/useAuth.js'
 import FormField from '../components/FormField.jsx'
 import Logo from '../components/Logo.jsx'
-import { COUNTIES } from '../constants.js'
-
-const ROLES = [
-  { value: 'farmer', title: 'I am a farmer', text: 'Sell my produce and see what buyers need' },
-  { value: 'buyer', title: 'I am a buyer', text: 'Find produce and advertise what I want to buy' },
-]
+import { COUNTIES, ROLES } from '../constants.js'
 
 export default function Signup() {
   const { user, signup } = useAuth()
@@ -50,7 +45,7 @@ export default function Signup() {
       <div className="form-card auth-card wide">
         <div className="auth-logo"><Logo size={44} /></div>
         <h1>Create your account</h1>
-        <p className="muted">Join farmers and buyers across Nyanza.</p>
+        <p className="muted">Join farmers, buyers and transporters across Nyanza.</p>
         {general && <div className="alert alert-error">{general}</div>}
 
         <form onSubmit={handleSubmit} className="form-grid">
@@ -58,8 +53,8 @@ export default function Signup() {
             {ROLES.map((r) => (
               <label key={r.value} className={form.role === r.value ? 'role-option selected' : 'role-option'}>
                 <input type="radio" name="role" value={r.value} checked={form.role === r.value} onChange={set('role')} />
-                <strong>{r.title}</strong>
-                <span>{r.text}</span>
+                <strong>I am a {r.label.toLowerCase()}</strong>
+                <span>{r.description}</span>
               </label>
             ))}
           </div>

@@ -9,6 +9,7 @@ import Signup from './pages/Signup.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 import PostProduce from './pages/PostProduce.jsx'
 import PostRequest from './pages/PostRequest.jsx'
+import PostTransport from './pages/PostTransport.jsx'
 import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/post-produce" element={<ProtectedRoute role="farmer"><PostProduce /></ProtectedRoute>} />
           <Route path="/post-request" element={<ProtectedRoute role="buyer"><PostRequest /></ProtectedRoute>} />
+          <Route path="/post-transport" element={<ProtectedRoute role="transporter"><PostTransport /></ProtectedRoute>} />
           <Route path="/upload" element={<Navigate to="/post-produce" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

@@ -14,6 +14,7 @@ export default function PostProduce() {
     name: '', category: 'cereals', price_per_kg: '', quantity_kg: '', description: '',
     phone: localPhone(user.phone), county: user.county || 'kisii', location: user.location || '',
   })
+  const [photo, setPhoto] = useState(null)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const set = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }))
@@ -25,7 +26,15 @@ export default function PostProduce() {
     setSaving(true)
     setError(null)
     try {
-      await api.post('/products/', form)
+      if (photo) {
+        // Photo present: send everything as multipart/form-data.
+        const data = new FormData()
+        Object.entries(form).forEach(([key, value]) => data.append(key, value))
+        data.append('image', photo)
+        await api.upload('/products/', data)
+      } else {
+        await api.post('/products/', form)
+      }
       navigate('/dashboard?tab=produce')
     } catch (err) {
       setError(err)
@@ -67,6 +76,9 @@ export default function PostProduce() {
           <FormField label="Contact phone" htmlFor="phone" error={fe.phone} hint="Safaricom or Airtel, e.g. 0712345678">
             <input id="phone" type="tel" required value={form.phone} onChange={set('phone')} />
           </FormField>
+          <FormField label="Photo (optional)" htmlFor="photo" error={fe.image} hint="A clear photo of the produce helps buyers decide faster">
+            <input id="photo" type="file" accept="image/*" onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
+          </FormField>
           <div className="span-2">
             <FormField label="Description" htmlFor="description" error={fe.description} hint="Variety, quality, how it is stored, delivery options…">
               <textarea id="description" rows="4" value={form.description} onChange={set('description')} />
@@ -80,4 +92,4 @@ export default function PostProduce() {
       </div>
     </div>
   )
-}
+} 

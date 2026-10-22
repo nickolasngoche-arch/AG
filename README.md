@@ -44,7 +44,6 @@ Rows whose `source` is not "Sample data" are shown as real data.
 
 All endpoints are under `/api/`. Authenticated calls send `Authorization: Token <token>`.
 
-
 ## Tests and checks
 
 ```bash

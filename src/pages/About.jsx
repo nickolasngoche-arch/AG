@@ -9,11 +9,13 @@ export default function About() {
         buyers advertise what they want to purchase, and both can check commodity prices in markets across Kisii, Nyamira,
         Kisumu, Siaya, Homa Bay and Migori before they trade.
       </p>
+
       <h2>What you can do</h2>
       <ul>
         <li><strong>Farmers</strong> post produce with quantity, price, location and contact details.</li>
         <li><strong>Buyers</strong> post the produce they need, the quantity and the price they can pay.</li>
         <li><strong>Everyone</strong> can compare market prices to find the best place to sell or buy.</li>
+        <li><strong>Transporters</strong> post their routes, departure dates, vehicle type and free cargo space so farmers and buyers can move produce cheaply.</li>
       </ul>
       <h2>Why it matters</h2>
       <p>

@@ -9,13 +9,14 @@ import Toolbar from './Toolbar.jsx'
 import { EMPTY_FILTERS } from '../constants.js'
 
 /**
- * Generic list tab used for both farm produce and buyer requests.
+ * Generic list tab used for farm produce, buyer requests and transport availability.
  * `state` is the shared list fetched by the dashboard; "only my listings"
- * fetches `?mine=1` so closed (sold/fulfilled) items stay visible to their owner.
+ * fetches `?mine=1` so closed (sold/fulfilled/booked) items stay visible to their owner.
+ * Pass `customFilter(item, filters)` to replace the default search/county/category logic.
  */
 export default function ListingsTab({
   endpoint, state, onChanged, nameKey, closeField, posterRole, postPath, postLabel,
-  searchPlaceholder, mineLabel, emptyText, renderCard,
+  searchPlaceholder, mineLabel, emptyText, renderCard, customFilter, hideCategory,
 }) {
   const { user } = useAuth()
   const [filters, setFilters] = useState(EMPTY_FILTERS)
@@ -24,7 +25,12 @@ export default function ListingsTab({
   const active = filters.mine ? mine : state
   const canPost = user.role === posterRole
 
-  const items = useMemo(() => filterListings(active.data ?? [], filters, nameKey), [active.data, filters, nameKey])
+  const items = useMemo(() => {
+    const list = active.data ?? []
+    return customFilter
+      ? list.filter((item) => customFilter(item, filters))
+      : filterListings(list, filters, nameKey)
+  }, [active.data, filters, nameKey, customFilter])
 
   async function run(action) {
     setActionError('')
@@ -41,7 +47,7 @@ export default function ListingsTab({
 
   return (
     <section>
-      <Toolbar filters={filters} onChange={setFilters} searchPlaceholder={searchPlaceholder} mineLabel={canPost ? mineLabel : null} />
+      <Toolbar filters={filters} onChange={setFilters} searchPlaceholder={searchPlaceholder} mineLabel={canPost ? mineLabel : null} hideCategory={hideCategory} />
       {actionError && <div className="alert alert-error">{actionError}</div>}
 
       {active.loading ? (

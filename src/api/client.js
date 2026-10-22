@@ -34,14 +34,15 @@ async function request(path, { method = 'GET', body, auth = true } = {}) {
   const headers = { Accept: 'application/json' }
   const token = auth ? tokenStore.get() : null
   if (token) headers.Authorization = `Token ${token}`
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
+  if (body !== undefined && !isFormData) headers['Content-Type'] = 'application/json'
 
   let response
   try {
     response = await fetch(`${BASE}${path}`, {
       method,
       headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : (isFormData ? body : JSON.stringify(body)),
     })
   } catch {
     throw new ApiError(0, { detail: 'Cannot reach the server. Make sure the Django backend is running.' })
@@ -57,6 +58,9 @@ export const api = {
   post: (path, body, options) => request(path, { ...options, method: 'POST', body }),
   patch: (path, body, options) => request(path, { ...options, method: 'PATCH', body }),
   delete: (path, options) => request(path, { ...options, method: 'DELETE' }),
+  // Multipart upload (e.g. product photos). Content-Type is left unset on
+  // purpose: the browser adds the multipart boundary.
+  upload: (path, formData, options) => request(path, { ...options, method: 'POST', body: formData }),
 }
 
 /** Per-field messages from a DRF validation error, e.g. { phone: "Enter a valid…" }. */

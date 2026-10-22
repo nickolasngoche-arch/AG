@@ -3,13 +3,18 @@ import { useAuth } from '../hooks/useAuth.js'
 import './Home.css'
 
 const FEATURES = [
-  { icon: '🌽', title: 'Sell your produce', text: 'List what you harvested with price, quantity and location. Buyers contact you directly by call or WhatsApp.' },
+  { icon: '🌽', title: 'Sell your produce', text: 'List what you harvested with price, quantity, photos and location. Buyers contact you directly by call or WhatsApp.' },
   { icon: '🛒', title: 'Advertise what you need', text: 'Buyers post the produce and quantity they want so farmers can come to them.' },
+  { icon: '🚚', title: 'Fill empty trucks', text: 'Transporters post routes, departure dates and free cargo space so produce moves at a lower cost on return legs.' },
+  { icon: '🎯', title: 'Get matched', text: 'We match farmers, buyers and trucks by crop, county, price and route — and show you exactly why it matched.' },
   { icon: '📈', title: 'Know the market price', text: 'Compare commodity prices across markets in all six Nyanza counties before you sell or buy.' },
 ]
 
-const STEPS = ['Create a free account as a farmer or a buyer', 'Post your produce or your buying request', 'Connect with the other side and agree the deal']
-
+const STEPS = [
+  'Create a free account as a farmer, buyer or transporter',
+  'Post your produce, buying request or truck availability',
+  'Get matched, connect with the other side and agree the deal',
+]
 export default function Home() {
   const { user } = useAuth()
   return (

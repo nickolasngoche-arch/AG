@@ -34,6 +34,7 @@ export default function Navbar() {
           {user && <NavLink to="/dashboard" className={linkClass} onClick={close}>Dashboard</NavLink>}
           {user?.role === 'farmer' && <NavLink to="/post-produce" className={linkClass} onClick={close}>Post produce</NavLink>}
           {user?.role === 'buyer' && <NavLink to="/post-request" className={linkClass} onClick={close}>Post request</NavLink>}
+          {user?.role === 'transporter' && <NavLink to="/post-transport" className={linkClass} onClick={close}>Post availability</NavLink>}
           <NavLink to="/about" className={linkClass} onClick={close}>About</NavLink>
 
           <div className="nav-auth">
